@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  USER
+}
+
+model User {
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
+  password       String
+  firstName      String
+  lastName       String
+  middleName     String?
+  dob            String?
+  gender         String
+  banned         Boolean       @default(false)
+  emailConfirmed Boolean       @default(false)
+  isActive       Boolean       @default(true)
+  role           Role          @default(USER)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  profile        Profile?
+  userDetails    UserDetails?
+  SuperAdmin     SuperAdmin?
+  Admin          Admin?
+  Salary         Salary?
+  Expense        Expense?
+  IncomeSource   IncomeSource?
+  Asset          Asset?
+  Saving         Saving?
+  Liability      Liability?
+
+  @@index([email], name: "user_email_idx")
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  bio       String?
+  phone     String?
+  address   String?
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Salary {
+  id        Int      @id @default(autoincrement())
+  amount    Float // Monthly income or salary
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id            Int          @id @default(autoincrement())
+  amount        Float // Amount spent
+  category      String // Category of expense (e.g., "Food", "Rent", "Utilities")
+  description   String? // Description of the expense
+  date          DateTime // Date of the expense
+  userId        Int          @unique
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  UserDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  userDetailsId Int?
+}
+
+model IncomeSource {
+  id            Int          @id @default(autoincrement())
+  amount        Float // Amount from this income source
+  description   String // Description of the income source (e.g., Freelance, Investments)
+  userId        Int          @unique
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  UserDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  userDetailsId Int?
+}
+
+model Asset {
+  id            Int          @id @default(autoincrement())
+  name          String // Name of the asset (e.g., Real Estate, Stocks)
+  value         Float // Value of the asset
+  userId        Int          @unique
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  UserDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  userDetailsId Int?
+}
+
+model Saving {
+  id            Int          @id @default(autoincrement())
+  amount        Float // Amount saved
+  description   String // Description of the savings (e.g., Emergency Fund)
+  userId        Int          @unique
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  UserDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  userDetailsId Int?
+}
+
+model Liability {
+  id            Int          @id @default(autoincrement())
+  name          String       // Name or type of liability (e.g., Mortgage, Credit Card)
+  amount        Float        // Total amount owed
+  dueDate       DateTime     // Due date for the liability (optional)
+  userId        Int          @unique
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  UserDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  userDetailsId Int?
+}
+
+model SuperAdmin {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int      @unique
+  privileges String[] // Example: ["manage_users", "view_reports"]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Admin {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int      @unique
+  department String   // Example: "Finance", "Customer Support"
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model UserDetails {
+  id               Int            @id @default(autoincrement())
+  user             User           @relation(fields: [userId], references: [id])
+  userId           Int            @unique
+  expenses         Expense[]      // A user can have many expenses
+  incomeSources    IncomeSource[] // Additional sources of income
+  assets           Asset[]        // User's assets
+  savings          Saving[]       // User's savings
+  liabilities      Liability[]    // User's liabilities
+  totalAssets      Float?
+  totalLiabilities Float?
+  netWorth         Float?         // User's net worth
+  goals            String[]       // Example: ["Retirement", "Investment Growth"]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
