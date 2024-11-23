@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -11,30 +12,32 @@ import {
 export class AuthDTO {
   @IsEmail()
   @IsNotEmpty()
+  @ApiProperty({ example: 'user@example.com', description: 'The email of the user' })
   email: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
+  @ApiProperty({ example: 'securePassword123', description: 'The password for the user account' })
   password: string;
 
   @IsString()
   @IsOptional()
-  firstName?: string;
+  @ApiProperty({ example: 'John', description: 'The first name of the user' })
+  firstName: string;
 
   @IsString()
   @IsOptional()
-  lastName?: string;
+  @ApiProperty({ example: 'Doe', description: 'The last name of the user' })
+  lastName: string;
 
   @IsString()
   @IsOptional()
-  middleName?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  isAdmin?: boolean;
+  @ApiProperty({ example: 'Smith', description: 'The middle name of the user' })
+  middleName: string;
 
   @IsEnum(['MALE', 'FEMALE', 'OTHER'])
   @IsOptional()
-  gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  @ApiProperty({ example: 'male', description: 'The gender of the user' })
+  gender: 'MALE' | 'FEMALE' | 'OTHER';
 }
